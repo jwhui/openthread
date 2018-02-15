@@ -61,37 +61,52 @@ class VirtualTime:
     PORT_OFFSET = int(os.getenv('PORT_OFFSET', "0"))
 
     def __init__(self):
-        self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self._sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
         ip = '127.0.0.1'
-        self.port = self.BASE_PORT + (self.PORT_OFFSET * self.MAX_NODES)
-        self.sock.bind((ip, self.port))
+        self._port = self.BASE_PORT + (self.PORT_OFFSET * self.MAX_NODES)
+        self._sock.bind((ip, self._port))
 
-        self.devices = {}
-        self.event_queue = []
-        self.event_count = 0
-        self.current_time = 0
-        self.current_event = None;
+        self._devices = {}
+        self._event_queue = []
+        self._event_count = 0
+        self._current_time = 0
+        self._current_event = None;
 
         self._message_factory = config.create_default_thread_message_factory()
 
     def __del__(self):
-        self.sock.close()
+        self._sock.close()
 
     def _add_message(self, nodeid, message):
-        addr = ('127.0.0.1', self.port + nodeid)
+        addr = ('127.0.0.1', self._port + nodeid)
 
         # Ignore any exceptions
         try:
             msg = self._message_factory.create(io.BytesIO(message))
 
             if msg is not None:
-                self.devices[addr]['msgs'].append(msg)
+                self._devices[addr]['msgs'].append(msg)
 
         except Exception as e:
             # Just print the exception to the console
             print("EXCEPTION: %s" % e)
             pass
+
+    def _add_alarm(self, event):
+        addr = event[1]
+
+        # remove any existing alarm event for device
+        try:
+            self._event_queue.remove(self._devices[addr]['alarm'])
+            #print "-- Remove\t", self._devices[addr]['alarm']
+            self._devices[addr]['alarm'] = None
+        except ValueError:
+            pass
+
+        # add alarm event to event queue
+        bisect.insort(self._event_queue, event)
+        self._devices[addr]['alarm'] = event
 
     def set_lowpan_context(self, cid, prefix):
         self._message_factory.set_lowpan_context(cid, prefix)
@@ -107,86 +122,74 @@ class VirtualTime:
         Returns:
             MessagesSet: a set with received messages.
         """
-        addr = ('127.0.0.1', self.port + nodeid)
+        addr = ('127.0.0.1', self._port + nodeid)
 
-        messages = self.devices[addr]['msgs']
-        self.devices[addr]['msgs'] = []
+        messages = self._devices[addr]['msgs']
+        self._devices[addr]['msgs'] = []
 
         return message.MessagesSet(messages)
 
     def receive_events(self):
 
-        if self.current_event is None:
-            self.sock.setblocking(0)
+        if self._current_event is None:
+            self._sock.setblocking(0)
         else:
-            self.sock.setblocking(1)
+            self._sock.setblocking(1)
 
         while True:
             try:
-                msg, addr = self.sock.recvfrom(1024)
+                msg, addr = self._sock.recvfrom(1024)
             except socket.error:
                 break
 
-            if addr not in self.devices:
-                self.devices[addr] = {}
-                self.devices[addr]['alarm'] = None
-                self.devices[addr]['msgs'] = []
-                self.devices[addr]['time'] = self.current_time
-                #print "New device:", addr, self.devices
+            if addr not in self._devices:
+                self._devices[addr] = {}
+                self._devices[addr]['alarm'] = None
+                self._devices[addr]['msgs'] = []
+                self._devices[addr]['time'] = self._current_time
+                #print "New device:", addr, self._devices
 
             delay, type, datalen = struct.unpack('=QBH', msg[:11])
             data = msg[11:]
 
-            event_time = self.current_time + delay
+            event_time = self._current_time + delay
 
             if type == 0:
-                # remove any existing alarm event for device
-                try:
-                    self.event_queue.remove(self.devices[addr]['alarm'])
-                    #print "-- Remove\t", self.devices[addr]['alarm']
-                    self.devices[addr]['alarm'] = None
-                except ValueError:
-                    pass
-
-                # add alarm event to event queue
                 event = (event_time, addr, type, datalen)
-                #print "-- Enqueue\t", event, delay, self.current_time
-                bisect.insort(self.event_queue, event)
-                self.devices[addr]['alarm'] = event
+                self._add_alarm(event)
 
-                if self.current_event is not None and self.current_event[1] == addr:
-                    #print "Done\t", self.current_event
-                    self.current_event = None
+                if self._current_event is not None and self._current_event[1] == addr:
+                    #print "Done\t", self._current_event
+                    self._current_event = None
                     return
 
             elif type == 1:
                 # add radio receive events event queue
-                for device in self.devices:
+                for device in self._devices:
                     if device != addr:
                         event = (event_time, device, type, datalen, data)
                         #print "-- Enqueue\t", event
-                        bisect.insort(self.event_queue, event)
+                        bisect.insort(self._event_queue, event)
 
-                self._add_message(addr[1] - self.port, data)
+                self._add_message(addr[1] - self._port, data)
 
                 # add radio transmit done events to event queue
                 event = (event_time, addr, type, datalen, data)
-                bisect.insort(self.event_queue, event)
+                bisect.insort(self._event_queue, event)
 
-    def process_next_event(self):
+    def _process_next_event(self):
 
-        if self.current_event != None:
-            return
+        assert(self._current_event == None)
 
-        #print "Events", len(self.event_queue)
+        #print "Events", len(self._event_queue)
         count = 0
-        for event in self.event_queue:
+        for event in self._event_queue:
             #print count, event
             count += 1
 
         # process next event
         try:
-            event = self.event_queue.pop(0)
+            event = self._event_queue.pop(0)
         except IndexError:
             return
 
@@ -197,44 +200,51 @@ class VirtualTime:
         else:
             event_time, addr, type, datalen, data = event
 
-        self.event_count += 1
-        self.current_event = event
+        self._event_count += 1
+        self._current_event = event
 
-        assert(event_time >= self.current_time)
-        self.current_time = event_time
+        assert(event_time >= self._current_time)
+        self._current_time = event_time
 
-        elapsed = event_time - self.devices[addr]['time']
-        self.devices[addr]['time'] = event_time
+        elapsed = event_time - self._devices[addr]['time']
+        self._devices[addr]['time'] = event_time
 
         message = struct.pack('=QBH', elapsed, type, datalen)
 
         if type == 0:
-            self.devices[addr]['alarm'] = None
-            self.sock.sendto(message, addr)
+            self._devices[addr]['alarm'] = None
+            rval = self._sock.sendto(message, addr)
+            assert(rval == len(message))
         elif type == 1:
             message += data
-            self.sock.sendto(message, addr)
+            rval = self._sock.sendto(message, addr)
+            assert(rval == len(message))
 
-    def sync_devices(self):
-        for addr in self.devices:
-            elapsed = self.current_time - self.devices[addr]['time']
-            self.devices[addr]['time'] = self.current_time
-            message = struct.pack('=QBH', elapsed, 0, 0)
-            self.sock.sendto(message, addr)
+    def _sync_time(self):
+        sync_time = self._current_time
+
+        for addr in self._devices:
+            event = (sync_time, addr, 0, 0)
+            self._add_alarm(event)
+
+        while self._event_queue[0][0] <= sync_time:
+            self._process_next_event()
+            self.receive_events()
+
+        for addr in self._devices:
+            assert(self._devices[addr]['time'] == sync_time)
 
     def go(self, duration):
 
-        duration = int(duration) * 1000000
-
-        start_time = self.current_time
-        self.current_event = None
-
-        print "running for %d us" % duration
+        print "running for %d s" % duration
 
         self.receive_events()
 
-        while (self.current_time - start_time) < duration:
-            self.process_next_event()
+        duration = int(duration) * 1000000
+        end_time = self._current_time + duration
+
+        while self._current_time <= end_time:
+            self._process_next_event()
             self.receive_events()
 
-        self.sync_devices()
+        self._sync_time()
