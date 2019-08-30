@@ -86,6 +86,8 @@ otError UdpExample::ProcessBind(int argc, char *argv[])
 
     sockaddr.mPort = static_cast<uint16_t>(value);
 
+    otIp6AddUnsecurePort(mInterpreter.mInstance, sockaddr.mPort);
+
     error = otUdpBind(&mSocket, &sockaddr);
 
 exit:
@@ -169,7 +171,11 @@ otError UdpExample::ProcessSend(int argc, char *argv[])
         messageInfo.mPeerPort = static_cast<uint16_t>(value);
     }
 
-    message = otUdpNewMessage(mInterpreter.mInstance, NULL);
+    otMessageSettings settings;
+    settings.mLinkSecurityEnabled = false;
+    settings.mPriority            = OT_MESSAGE_PRIORITY_LOW;
+
+    message = otUdpNewMessage(mInterpreter.mInstance, &settings);
     VerifyOrExit(message != NULL, error = OT_ERROR_NO_BUFS);
 
     if (autoGenMessageLength != 0)

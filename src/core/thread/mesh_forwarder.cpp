@@ -293,7 +293,8 @@ otError MeshForwarder::UpdateIp6Route(Message &aMessage)
     GetMacSourceAddress(ip6Header.GetSource(), mMacSource);
 
     // 2. Choose correct MAC Destination Address.
-    if (mle.GetRole() == OT_DEVICE_ROLE_DISABLED || mle.GetRole() == OT_DEVICE_ROLE_DETACHED)
+    if (mle.GetRole() == OT_DEVICE_ROLE_DISABLED || mle.GetRole() == OT_DEVICE_ROLE_DETACHED ||
+        !aMessage.IsLinkSecurityEnabled())
     {
         // Allow only for link-local unicasts and multicasts.
         if (ip6Header.GetDestination().IsLinkLocal() || ip6Header.GetDestination().IsLinkLocalMulticast())
