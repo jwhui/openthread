@@ -31,6 +31,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #define mbedtls_printf          printf
+#define mbedtls_exit            exit
 #define MBEDTLS_EXIT_SUCCESS    EXIT_SUCCESS
 #define MBEDTLS_EXIT_FAILURE    EXIT_FAILURE
 #endif /* MBEDTLS_PLATFORM_C */
@@ -120,7 +121,7 @@ int main( void )
     "    max_pathlen=%%d          default: -1 (none)\n"     \
     "    md=%%s                   default: SHA256\n"        \
     "                            Supported values:\n"       \
-    "                            MD5, SHA1, SHA256, SHA512\n"\
+    "                            MD2, MD4, MD5, SHA1, SHA256, SHA512\n"\
     "    version=%%d              default: 3\n"            \
     "                            Possible values: 1, 2, 3\n"\
     "    subject_identifier=%%s   default: 1\n"             \
@@ -152,6 +153,7 @@ int main( void )
     "                            email_ca\n"              \
     "                            object_signing_ca\n"     \
     "\n"
+
 
 /*
  * global options
@@ -359,6 +361,10 @@ int main( int argc, char *argv[] )
                 opt.md = MBEDTLS_MD_SHA256;
             else if( strcmp( q, "SHA512" ) == 0 )
                 opt.md = MBEDTLS_MD_SHA512;
+            else if( strcmp( q, "MD2" ) == 0 )
+                opt.md = MBEDTLS_MD_MD2;
+            else if( strcmp( q, "MD4" ) == 0 )
+                opt.md = MBEDTLS_MD_MD4;
             else if( strcmp( q, "MD5" ) == 0 )
                 opt.md = MBEDTLS_MD_MD5;
             else
