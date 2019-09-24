@@ -80,7 +80,7 @@
   * Added lines [171-230] from ecp.h: ([260 - 322] minus [319-320])
   * Added lines [540 - 793]
   * Changed code in [2729 - 2749] to use HW acceleration if possible
-  * Changed code in [3148 - 2158] to use HW acceleration if possible
+  * Changed code in [3148 - 3158] to use HW acceleration if possible
   *
   * Original files (ecp.c, ecp.h) from mbed TLS version 2.16.2
   */
