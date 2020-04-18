@@ -801,6 +801,8 @@ private:
     static void HandleAddressSolicit(void *aContext, otMessage *aMessage, const otMessageInfo *aMessageInfo);
     void        HandleAddressSolicit(Coap::Message &aMessage, const Ip6::MessageInfo &aMessageInfo);
 
+    const LeaderData &GetAttachLeaderData(void) const { return mAttachLeaderData; }
+
     static bool IsSingleton(const RouteTlv &aRouteTlv);
 
     void HandlePartitionChange(void);
@@ -843,6 +845,8 @@ private:
 
     uint8_t mRouterId;
     uint8_t mPreviousRouterId;
+
+    LeaderData mAttachLeaderData;
 
     uint32_t mPreviousPartitionIdRouter;         ///< The partition ID when last operating as a router
     uint32_t mPreviousPartitionId;               ///< The partition ID when last attached

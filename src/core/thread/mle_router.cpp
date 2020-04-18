@@ -1220,6 +1220,7 @@ otError MleRouter::HandleAdvertisement(const Message &         aMessage,
 #endif
         )
         {
+            mAttachLeaderData = leaderData;
             BecomeChild(kAttachBetter);
         }
 
@@ -1592,6 +1593,7 @@ otError MleRouter::HandleParentRequest(const Message &aMessage, const Ip6::Messa
     uint16_t                version;
     uint8_t                 scanMask;
     Challenge               challenge;
+    LeaderData              leaderData;
     Router *                leader;
     Child *                 child;
 #if OPENTHREAD_CONFIG_TIME_SYNC_ENABLE
@@ -1648,6 +1650,11 @@ otError MleRouter::HandleParentRequest(const Message &aMessage, const Ip6::Messa
     case kRoleLeader:
         VerifyOrExit(ScanMaskTlv::IsRouterFlagSet(scanMask), OT_NOOP);
         break;
+    }
+
+    if (ReadLeaderData(aMessage, leaderData) == OT_ERROR_NONE)
+    {
+        VerifyOrExit(leaderData.GetPartitionId() <= mLeaderData.GetPartitionId(), error = OT_ERROR_DROP);
     }
 
     // Challenge
@@ -1802,6 +1809,7 @@ void MleRouter::HandleStateUpdateTimer(void)
         if ((mRouterTable.GetActiveRouterCount() > 0) && (mRouterTable.GetLeaderAge() >= mNetworkIdTimeout))
         {
             otLogInfoMle("Router ID Sequence timeout");
+            mAttachLeaderData = mLeaderData;
             BecomeChild(kAttachSame1);
         }
 
@@ -1809,6 +1817,7 @@ void MleRouter::HandleStateUpdateTimer(void)
         {
             // downgrade to REED
             otLogNoteMle("Downgrade to REED");
+            mAttachLeaderData = mLeaderData;
             BecomeChild(kAttachSameDowngrade);
         }
 

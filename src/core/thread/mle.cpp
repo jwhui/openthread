@@ -2066,6 +2066,18 @@ otError Mle::SendParentRequest(ParentRequestType aType)
     SuccessOrExit(error = AppendTimeRequest(*message));
 #endif
 
+#if OPENTHREAD_FTD
+    if (mParentRequestMode != kAttachAny)
+    {
+        LeaderDataTlv leaderDataTlv;
+
+        leaderDataTlv.Init();
+        leaderDataTlv.Set(Get<MleRouter>().GetAttachLeaderData());
+
+        SuccessOrExit(error = leaderDataTlv.AppendTo(*message));
+    }
+#endif
+
     destination.SetToLinkLocalAllRoutersMulticast();
     SuccessOrExit(error = SendMessage(*message, destination));
 
