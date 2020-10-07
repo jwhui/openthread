@@ -40,6 +40,30 @@ jobs:
         GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
       if: "github.ref != 'refs/heads/master'"
 
+  codeql:
+    runs-on: ubuntu-20.04
+    env:
+      CC: clang-10
+      CXX: clang++-10
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v1
+      with:
+        languages: cpp, python
+        queries: +security-and-quality
+    - name: Bootstrap
+      run: |
+        sudo rm /etc/apt/sources.list.d/* && sudo apt-get update
+        sudo apt-get remove -y libllvm10
+        sudo apt-get --no-install-recommends install -y clang-10 clang++-10 ninja-build
+    - name: Build
+      run: |
+        ./script/test build
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v1
+
   pretty:
     runs-on: ubuntu-20.04
     steps:
