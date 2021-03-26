@@ -1,5 +1,5 @@
 #
-#  Copyright (c) 2020, The OpenThread Authors.
+#  Copyright (c) 2021, The OpenThread Authors.
 #  All rights reserved.
 #
 #  Redistribution and use in source and binary forms, with or without
@@ -26,26 +26,21 @@
 #  POSSIBILITY OF SUCH DAMAGE.
 #
 
-name: Size
-
-on: [push, pull_request]
-
+name: Cancel
+on:
+  workflow_run:
+    workflows:
+      - '**'
+    branches-ignore:
+      - main
+    types:
+      - requested
 jobs:
-
-  size-report:
-    runs-on: ubuntu-20.04
+  cancel:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
     steps:
-    - uses: actions/checkout@v2
-    - name: Bootstrap
-      if: "github.event_name == 'push'"
-      run: |
-        python3 -m pip install --upgrade setuptools wheel
-        python3 -m pip install mdv
-    - name: Run
-      env:
-        OT_BASE_BRANCH: "${{ github.base_ref }}"
-        SIZE_REPORT_URL: "https://openthread-size-report.glitch.me/size-report/1354027"
-        GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
-      run: |
-        export PATH=$PATH:$HOME/.local/bin
-        ./script/check-size
+    - uses: styfle/cancel-workflow-action@0.8.0
+      with:
+        all_but_latest: true
+        workflow_id: ${{ github.event.workflow.id }}

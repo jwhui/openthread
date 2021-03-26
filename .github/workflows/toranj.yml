@@ -32,14 +32,6 @@ on: [push, pull_request]
 
 jobs:
 
-  cancel-previous-runs:
-    runs-on: ubuntu-20.04
-    steps:
-    - uses: rokroskar/workflow-run-cleanup-action@master
-      env:
-        GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
-      if: "github.ref != 'refs/heads/main'"
-
   toranj-ncp:
     runs-on: ubuntu-18.04
     env:
