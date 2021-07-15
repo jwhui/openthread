@@ -114,7 +114,7 @@ public:
      * @param[in]  aInstance     A reference to the OpenThread instance.
      *
      */
-    RadioSelector(Instance &aInstance);
+    explicit RadioSelector(Instance &aInstance);
 
     /**
      * This method updates the neighbor info (for multi radio support) on a received frame event.
