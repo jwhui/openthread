@@ -55,7 +55,7 @@ otError otMultiRadioGetNeighborInfo(otInstance *              aInstance,
 
     neighbor = instance.Get<NeighborTable>().FindNeighbor(*static_cast<const Mac::ExtAddress *>(aExtAddress),
                                                           Neighbor::kInStateAnyExceptInvalid);
-    VerifyOrExit(neighbor != NULL, error = kErrorNotFound);
+    VerifyOrExit(neighbor != nullptr, error = kErrorNotFound);
 
     neighbor->PopulateMultiRadioInfo(*aNeighborInfo);
 
