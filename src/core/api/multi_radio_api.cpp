@@ -47,7 +47,7 @@ using namespace ot;
 
 otError otMultiRadioGetNeighborInfo(otInstance *              aInstance,
                                     const otExtAddress *      aExtAddress,
-                                    otMultiRadioNeighborInfo *aInfo)
+                                    otMultiRadioNeighborInfo *aNeighborInfo)
 {
     Error     error    = kErrorNone;
     Instance &instance = *static_cast<Instance *>(aInstance);
@@ -57,7 +57,7 @@ otError otMultiRadioGetNeighborInfo(otInstance *              aInstance,
                                                           Neighbor::kInStateAnyExceptInvalid);
     VerifyOrExit(neighbor != NULL, error = kErrorNotFound);
 
-    neighbor->PopulateMultiRadioInfo(*aInfo);
+    neighbor->PopulateMultiRadioInfo(*aNeighborInfo);
 
 exit:
     return error;
