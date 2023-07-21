@@ -2,6 +2,7 @@
 Checks: >
   -*,
   bugprone-argument-comment,
+  clang-analyzer-core.CallAndMessage,
   google-explicit-constructor,
   google-readability-casting,
   misc-unused-using-decls,
