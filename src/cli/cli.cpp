@@ -5239,7 +5239,7 @@ void Interpreter::HandleMeshDiagDiscoverDone(otError aError, otMeshDiagRouterInf
         {
             OutputFormat(kIndentSize, "%u-links:{ ", linkQuality);
 
-            for (uint8_t id = 0; id < OT_ARRAY_LENGTH(aRouterInfo->mLinkQualities); id++)
+            for (size_t id = 0; id < OT_ARRAY_LENGTH(aRouterInfo->mLinkQualities); id++)
             {
                 if (aRouterInfo->mLinkQualities[id] == linkQuality)
                 {

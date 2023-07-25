@@ -84,7 +84,7 @@ void otPlatFlashInit(otInstance *aInstance)
 
     if (create)
     {
-        for (uint8_t index = 0; index < SWAP_NUM; index++)
+        for (int index = 0; index < SWAP_NUM; index++)
         {
             otPlatFlashErase(aInstance, index);
         }
