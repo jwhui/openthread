@@ -63,6 +63,7 @@
 #define MBEDTLS_NO_DEFAULT_ENTROPY_SOURCES
 #define MBEDTLS_NO_PLATFORM_ENTROPY
 #define MBEDTLS_PK_C
+#define MBEDTLS_PK_HAVE_ECC_KEYS
 #define MBEDTLS_PK_PARSE_C
 #define MBEDTLS_PLATFORM_C
 #define MBEDTLS_PLATFORM_MEMORY
@@ -98,10 +99,12 @@
 
 #ifdef MBEDTLS_KEY_EXCHANGE_ECDHE_ECDSA_ENABLED
 #define MBEDTLS_BASE64_C
+#define MBEDTLS_CAN_ECDH
 #define MBEDTLS_ECDH_C
 #define MBEDTLS_ECDSA_C
 #define MBEDTLS_OID_C
 #define MBEDTLS_PEM_PARSE_C
+#define MBEDTLS_PK_CAN_ECDSA_SIGN
 #define MBEDTLS_X509_USE_C
 #define MBEDTLS_X509_CRT_PARSE_C
 #endif
@@ -146,12 +149,6 @@
 #if defined(\
     MBEDTLS_USER_CONFIG_FILE)
 #include MBEDTLS_USER_CONFIG_FILE
-#endif
-
-#include "mbedtls/version.h"
-// Include in the legacy config name adjustment file for mbedtls >= 3.5.0
-#if (MBEDTLS_VERSION_NUMBER >= 0x03050000)
-    #include "mbedtls/config_adjust_legacy_crypto.h"
 #endif
 
 #include "mbedtls/check_config.h"
