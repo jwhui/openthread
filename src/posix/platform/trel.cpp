@@ -39,6 +39,7 @@
 #include <assert.h>
 #include <fcntl.h>
 #include <netinet/in.h>
+#include <netinet/ip.h>
 #include <sys/socket.h>
 #include <unistd.h>
 
@@ -180,6 +181,11 @@ static void PrepareSocket(uint16_t &aUdpPort)
     VerifyOrDie(val != -1, OT_EXIT_ERROR_ERRNO);
     val = val | O_NONBLOCK;
     VerifyOrDie(fcntl(sSocket, F_SETFL, val) == 0, OT_EXIT_ERROR_ERRNO);
+
+#ifdef IPV6_ADDR_PREFERENCES
+    val = IPV6_PREFER_SRC_PUBLIC;
+    setsockopt(sSocket, IPPROTO_IPV6, IPV6_ADDR_PREFERENCES, &val, sizeof(val));
+#endif
 
     // Bind the socket.
 
