@@ -157,7 +157,7 @@ class Nat64SingleBorderRouter(thread_cert.TestCase):
         self.simulator.go(5)
 
         # Case 5 Infrastructure nat64 prefix no longer presents
-        br.bash("service bind9 stop")
+        br.bash("service named stop")
         self.simulator.go(NAT64_PREFIX_REFRESH_DELAY)
 
         local_nat64_prefix = br.get_br_nat64_prefix()
@@ -170,7 +170,7 @@ class Nat64SingleBorderRouter(thread_cert.TestCase):
         })
 
         # Case 6 Infrastructure nat64 prefix is recovered
-        br.bash("service bind9 start")
+        br.bash("service named start")
         self.simulator.go(NAT64_PREFIX_REFRESH_DELAY)
 
         self.assertEqual(br.get_br_favored_nat64_prefix(), infra_nat64_prefix)
@@ -184,7 +184,7 @@ class Nat64SingleBorderRouter(thread_cert.TestCase):
         # Case 7 Change infrastructure nat64 prefix
         br.bash("sed -i 's/dns64 /\/\/dns64 /' /etc/bind/named.conf.options")
         br.bash("sed -i '/\/\/dns64 /a dns64 " + SMALL_NAT64_PREFIX + " {};' /etc/bind/named.conf.options")
-        br.bash("service bind9 restart")
+        br.bash("service named restart")
         self.simulator.go(NAT64_PREFIX_REFRESH_DELAY)
 
         self.assertEqual(br.get_br_favored_nat64_prefix(), SMALL_NAT64_PREFIX)

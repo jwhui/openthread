@@ -91,8 +91,8 @@ class UpstreamDns(thread_cert.TestCase):
         self._start_dns_server(dns_server)
         dns_server_addr = dns_server.get_ether_addrs(ipv4=True, ipv6=False)[0]
 
-        # Disable the bind9 service on the BR otherwise bind9 may respond to Thread devices' DNS queries
-        br.bash('service bind9 stop')
+        # Disable the named service on the BR otherwise named may respond to Thread devices' DNS queries
+        br.bash('service named stop')
 
         # Update BR's /etc/resolv.conf and force BR to reload it
         br.bash(shlex.join(['echo', 'nameserver ' + dns_server_addr]) + ' > /etc/resolv.conf')
@@ -131,12 +131,12 @@ class UpstreamDns(thread_cert.TestCase):
 
     def _start_dns_server(self, dns_server):
         dns_server.start(start_radvd=False)
-        dns_server.bash('service bind9 stop')
+        dns_server.bash('service named stop')
 
         dns_server.bash(shlex.join(['echo', TEST_DOMAIN_BIND_CONF]) + ' >> /etc/bind/named.conf.local')
         dns_server.bash(shlex.join(['echo', TEST_DOMAIN_BIND_ZONE]) + ' >> /etc/bind/db.test.domain')
 
-        dns_server.bash('service bind9 start')
+        dns_server.bash('service named start')
 
 
 if __name__ == '__main__':
