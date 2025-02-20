@@ -2346,6 +2346,146 @@ exit:
     return error;
 }
 
+Error Mle::ValidateTlvs(const Message &aMessage) const
+{
+    OffsetRange     offsetRange;
+    Tlv::ParsedInfo tlvInfo;
+    Error           error = kErrorParse;
+
+    offsetRange.InitFromMessageOffsetToEnd(aMessage);
+
+    for (; !offsetRange.IsEmpty(); offsetRange.AdvanceOffset(tlvInfo.GetSize()))
+    {
+        uint16_t minSize = sizeof(Tlv);
+
+        SuccessOrExit(error = tlvInfo.ParseFrom(aMessage, offsetRange));
+
+        switch (tlvInfo.mType)
+        {
+        case SourceAddressTlv::kType:
+            minSize = sizeof(SourceAddressTlv);
+            break;
+        case ModeTlv::kType:
+            minSize = sizeof(ModeTlv);
+            break;
+        case TimeoutTlv::kType:
+            minSize = sizeof(TimeoutTlv);
+            break;
+        case ChallengeTlv::kType:
+            minSize = sizeof(ChallengeTlv);
+            break;
+        case ResponseTlv::kType:
+            minSize = sizeof(ResponseTlv);
+            break;
+        case LinkFrameCounterTlv::kType:
+            minSize = sizeof(LinkFrameCounterTlv);
+            break;
+        case Tlv::kLinkQuality:
+            break;
+        case Tlv::kNetworkParameter:
+            break;
+        case MleFrameCounterTlv::kType:
+            minSize = sizeof(MleFrameCounterTlv);
+            break;
+        case RouteTlv::kType:
+        {
+            RouteTlv tlv;
+
+            SuccessOrExit(error = aMessage.Read(offsetRange.GetOffset(), tlv));
+            VerifyOrExit(tlv.IsValid());
+            break;
+        }
+        case Address16Tlv::kType:
+            minSize = sizeof(Address16Tlv);
+            break;
+        case LeaderDataTlv::kType:
+            minSize = sizeof(LeaderDataTlv);
+            break;
+        case NetworkDataTlv::kType:
+        {
+            uint8_t  networkDataTlvs[NetworkData::NetworkData::kMaxSize];
+            uint16_t length = tlvInfo.mValueOffsetRange.GetLength();
+
+            VerifyOrExit(length <= sizeof(networkDataTlvs));
+            SuccessOrExit(error = aMessage.Read(offsetRange.GetOffset(), networkDataTlvs, length));
+
+            {
+                NetworkData::NetworkData networkData(GetInstance(), networkDataTlvs, length);
+
+                SuccessOrExit(networkData.Validate(Mac::kShortAddrBroadcast));
+            }
+            break;
+        }
+        case TlvRequestTlv::kType:
+            minSize = sizeof(TlvRequestTlv);
+            break;
+        case ScanMaskTlv::kType:
+            minSize = sizeof(ScanMaskTlv);
+            break;
+        case ConnectivityTlv::kType:
+            minSize = ConnectivityTlv::kMinSize;
+            break;
+        case LinkMarginTlv::kType:
+            minSize = sizeof(LinkMarginTlv);
+            break;
+        case StatusTlv::kType:
+            minSize = sizeof(StatusTlv);
+            break;
+        case VersionTlv::kType:
+            minSize = sizeof(VersionTlv);
+            break;
+        case AddressRegistrationTlv::kType:
+            minSize = sizeof(AddressRegistrationTlv);
+            break;
+        case ChannelTlv::kType:
+            minSize = sizeof(ChannelTlv);
+            break;
+        case PanIdTlv::kType:
+            minSize = sizeof(PanIdTlv);
+            break;
+        case ActiveTimestampTlv::kType:
+            minSize = sizeof(ActiveTimestampTlv);
+            break;
+        case PendingTimestampTlv::kType:
+            minSize = sizeof(PendingTimestampTlv);
+            break;
+        case Tlv::kActiveDataset:
+        case Tlv::kPendingDataset:
+        {
+            MeshCoP::Dataset dataset;
+
+            SuccessOrExit(error = dataset.SetFrom(aMessage, tlvInfo.mValueOffsetRange));
+            SuccessOrExit(error = dataset.ValidateTlvs());
+            break;
+        }
+        case Tlv::kDiscovery:
+            // validation happens in `HandleDiscoveryRequest()`
+            break;
+        case SupervisionIntervalTlv::kType:
+            minSize = sizeof(SupervisionIntervalTlv);
+            break;
+        case Tlv::kWakeupChannel:
+            break;
+        case CslChannelTlv::kType:
+            minSize = sizeof(CslChannelTlv);
+            break;
+        case CslTimeoutTlv::kType:
+            minSize = sizeof(CslTimeoutTlv);
+            break;
+        case CslClockAccuracyTlv::kType:
+            minSize = sizeof(CslClockAccuracyTlv);
+            break;
+        }
+
+        VerifyOrExit(tlvInfo.GetSize() >= minSize);
+    }
+
+    error = kErrorNone;
+
+exit:
+    return error;
+}
+
 void Mle::HandleUdpReceive(Message &aMessage, const Ip6::MessageInfo &aMessageInfo)
 {
     Error           error = kErrorNone;
@@ -2408,6 +2548,8 @@ void Mle::HandleUdpReceive(Message &aMessage, const Ip6::MessageInfo &aMessageIn
 
     IgnoreError(aMessage.Read(aMessage.GetOffset(), command));
     aMessage.MoveOffset(sizeof(command));
+
+    SuccessOrExit(error = ValidateTlvs(aMessage));
 
     aMessageInfo.GetPeerAddr().GetIid().ConvertToExtAddress(extAddr);
     neighbor = (command == kCommandChildIdResponse) ? mNeighborTable.FindParent(extAddr)

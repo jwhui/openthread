@@ -158,6 +158,17 @@ public:
     const uint8_t *GetBytes(void) const { return mTlvs; }
 
     /**
+     * Validate formatting of TLVs.
+     *
+     * @param[in] aRloc16  The matching RLOC16 value that all entries must contain,
+     *                     or `0xffff` to ignore RLOC16 values.
+     *
+     * @retval kErrorNone   All TLVs are formatted properly.
+     * @retval kErrorParse  One or more TLVs are malformed.
+     */
+    Error Validate(uint16_t aRloc16) const;
+
+    /**
      * Provides full or stable copy of the Thread Network Data.
      *
      * @param[in]     aType        The Network Data type to copy, the full set or stable subset.
@@ -540,6 +551,9 @@ private:
     };
 
     Error Iterate(Iterator &aIterator, uint16_t aRloc16, Config &aConfig) const;
+
+    static Error ValidatePrefix(const PrefixTlv &aPrefix, uint16_t aRloc16);
+    static Error ValidateService(const ServiceTlv &aService, uint16_t aRloc16);
 
     static bool MatchService(const ServiceTlv  &aServiceTlv,
                              uint32_t           aEnterpriseNumber,

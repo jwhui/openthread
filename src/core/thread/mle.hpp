@@ -1319,6 +1319,7 @@ private:
     void       ClearParentCandidate(void) { mParentCandidate.Clear(); }
     Error      SendDataRequest(const Ip6::Address &aDestination);
     void       HandleNotifierEvents(Events aEvents);
+    Error      ValidateTlvs(const Message &aMessage) const;
     void       HandleUdpReceive(Message &aMessage, const Ip6::MessageInfo &aMessageInfo);
     void       ReestablishLinkWithNeighbor(Neighbor &aNeighbor);
     Error      SendChildUpdateRequestToParent(ChildUpdateRequestMode aMode);

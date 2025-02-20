@@ -675,6 +675,9 @@ OT_TOOL_PACKED_BEGIN
 class ConnectivityTlv : public Tlv, public TlvInfo<Tlv::kConnectivity>
 {
 public:
+    static constexpr uint8_t kMinLength = 7;
+    static constexpr uint8_t kMinSize   = sizeof(Tlv) + kMinLength;
+
     /**
      * Initializes the TLV.
      */

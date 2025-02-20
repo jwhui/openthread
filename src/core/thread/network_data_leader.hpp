@@ -599,10 +599,6 @@ private:
 
     static bool RlocMatch(uint16_t aFirstRloc16, uint16_t aSecondRloc16, MatchMode aMatchMode);
 
-    static Error Validate(const NetworkData &aNetworkData, uint16_t aRloc16);
-    static Error ValidatePrefix(const PrefixTlv &aPrefix, uint16_t aRloc16);
-    static Error ValidateService(const ServiceTlv &aService, uint16_t aRloc16);
-
     static bool ContainsMatchingEntry(const PrefixTlv *aPrefix, bool aStable, const HasRouteEntry &aEntry);
     static bool ContainsMatchingEntry(const HasRouteTlv *aHasRoute, const HasRouteEntry &aEntry);
     static bool ContainsMatchingEntry(const PrefixTlv *aPrefix, bool aStable, const BorderRouterEntry &aEntry);
