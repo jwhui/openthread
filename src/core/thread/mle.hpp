@@ -1412,6 +1412,8 @@ private:
     Error       SendDataRequest(const Ip6::Address &aDestination, const uint8_t *aTlvs, uint8_t aTlvsLength);
 #endif
 
+    static Error ValidateTlvs(const Message &aMessage);
+
 #if OT_SHOULD_LOG_AT(OT_LOG_LEVEL_INFO)
     static void Log(MessageAction aAction, MessageType aType, const Ip6::Address &aAddress);
     static void Log(MessageAction aAction, MessageType aType, const Ip6::Address &aAddress, uint16_t aRloc);

@@ -372,6 +372,8 @@ public:
      */
     bool ContainsBorderRouterWithRloc(uint16_t aRloc16) const;
 
+    static Error ValidateTlvs(const Message &aMessage, const OffsetRange &aOffsetRange);
+
 protected:
     /**
      * Defines Service Data match mode.

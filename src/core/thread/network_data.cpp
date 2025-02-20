@@ -43,6 +43,77 @@ RegisterLogModule("NetworkData");
 //---------------------------------------------------------------------------------------------------------------------
 // NetworkData
 
+Error NetworkData::ValidateTlvs(const Message &aMessage, const OffsetRange &aOffsetRange)
+{
+    OffsetRange     offsetRange = aOffsetRange;
+    Tlv::ParsedInfo tlvInfo;
+    Error           error = kErrorParse;
+
+    for (; !offsetRange.IsEmpty(); offsetRange.AdvanceOffset(tlvInfo.GetSize()))
+    {
+        uint16_t minSize = sizeof(NetworkDataTlv);
+
+        SuccessOrExit(error = tlvInfo.ParseFrom(aMessage, offsetRange));
+
+        switch (tlvInfo.mType)
+        {
+        case HasRouteTlv::kType:
+        {
+            minSize = sizeof(HasRouteTlv);
+            break;
+        }
+        case PrefixTlv::kType:
+        {
+            PrefixTlv   prefixTlv;
+            OffsetRange subTlvsOffsetRange;
+
+            SuccessOrExit(error = aMessage.Read(tlvInfo.mTlvOffsetRange, prefixTlv));
+            VerifyOrExit(prefixTlv.IsValid());
+
+            subTlvsOffsetRange = tlvInfo.mTlvOffsetRange;
+            subTlvsOffsetRange.AdvanceOffset(prefixTlv.GetSize() - prefixTlv.GetSubTlvsLength());
+            SuccessOrExit(error = ValidateTlvs(aMessage, subTlvsOffsetRange));
+            break;
+        }
+        case BorderRouterTlv::kType:
+        {
+            minSize = sizeof(BorderRouterTlv);
+            break;
+        }
+        case ContextTlv::kType:
+        {
+            minSize = sizeof(ContextTlv);
+            break;
+        }
+        case ServiceTlv::kType:
+        {
+            ServiceTlv  serviceTlv;
+            OffsetRange subTlvsOffsetRange;
+
+            SuccessOrExit(error = aMessage.Read(tlvInfo.mTlvOffsetRange, serviceTlv));
+            VerifyOrExit(serviceTlv.IsValid());
+
+            subTlvsOffsetRange = tlvInfo.mTlvOffsetRange;
+            subTlvsOffsetRange.AdvanceOffset(serviceTlv.GetSize() - serviceTlv.GetSubTlvsLength());
+            SuccessOrExit(error = ValidateTlvs(aMessage, subTlvsOffsetRange));
+            break;
+        }
+        case ServerTlv::kType:
+        {
+            minSize = sizeof(ServerTlv);
+            break;
+        }
+        }
+
+        VerifyOrExit(tlvInfo.GetSize() >= minSize);
+    }
+
+    error = kErrorNone;
+
+exit:
+    return error;
+}
+
 Error NetworkData::CopyNetworkData(Type aType, uint8_t *aData, uint8_t &aDataLength) const
 {
     Error              error;
