@@ -104,16 +104,14 @@ class Cert_5_5_3_SplitMergeChildren(thread_cert.TestCase):
         self.simulator.go(5)
         self.assertEqual(self.nodes[ED2].get_state(), 'child')
 
-        self.nodes[LEADER].reset()
-        self._setUpLeader()
+        self.nodes[LEADER].stop()
         self.nodes[ROUTER2].set_preferred_partition_id(0xffffffff)
-
         self.simulator.go(150)
-
         self.assertEqual(self.nodes[ROUTER1].get_state(), 'leader')
         self.assertEqual(self.nodes[ROUTER2].get_state(), 'leader')
 
-        self.nodes[LEADER].start()
+        self.nodes[LEADER].reset()
+        self._setUpLeader()
         self.simulator.go(config.LEADER_RESET_DELAY)
         self.assertEqual(self.nodes[LEADER].get_state(), 'router')
 

@@ -97,13 +97,12 @@ class Cert_5_5_4_SplitMergeRouters(thread_cert.TestCase):
         self.simulator.go(config.ROUTER_STARTUP_DELAY)
         self.assertEqual(self.nodes[ROUTER4].get_state(), 'router')
 
-        self.nodes[LEADER].reset()
-        self._setUpLeader()
+        self.nodes[LEADER].stop()
         self.simulator.go(150)
 
-        self.nodes[LEADER].start()
+        self.nodes[LEADER].reset()
+        self._setUpLeader()
         self.simulator.go(50 + config.LEADER_RESET_DELAY)
-
         self.assertEqual(self.nodes[LEADER].get_state(), 'router')
 
         self.collect_ipaddrs()
