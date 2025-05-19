@@ -78,12 +78,12 @@ class Cert_5_5_2_LeaderReboot(thread_cert.TestCase):
         self.simulator.go(5)
         self.assertEqual(self.nodes[ED].get_state(), 'child')
 
-        self.nodes[LEADER].reset()
-        self._setUpLeader()
+        self.nodes[LEADER].stop()
         self.simulator.go(150)
         self.assertEqual(self.nodes[ROUTER].get_state(), 'leader')
 
-        self.nodes[LEADER].start()
+        self.nodes[LEADER].reset()
+        self._setUpLeader()
         self.simulator.go(config.LEADER_RESET_DELAY)
         self.assertEqual(self.nodes[LEADER].get_state(), 'router')
 

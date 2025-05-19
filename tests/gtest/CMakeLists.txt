@@ -65,6 +65,7 @@ add_library(ot-fake-rcp
     fake_coprocessor_platform.cpp
 )
 target_link_libraries(ot-fake-rcp
+    ot-config-radio
     openthread-hdlc
     openthread-rcp
     openthread-radio-spinel
@@ -72,7 +73,7 @@ target_link_libraries(ot-fake-rcp
     ot-fake-platform
 )
 
-add_executable(ot-radio-spinel-rcp-gtest
+add_executable(ogit-radio-spinel-rcp-gtest
     radio_spinel_rcp_test.cpp
 )
 target_link_libraries(ot-radio-spinel-rcp-gtest

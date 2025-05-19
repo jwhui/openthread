@@ -36,8 +36,11 @@
 #include <openthread/config.h>
 
 #include <openthread/cli.h>
+#include <openthread/dataset.h>
 #include <openthread/diag.h>
+#include <openthread/ip6.h>
 #include <openthread/tasklet.h>
+#include <openthread/thread.h>
 #include <openthread/platform/logging.h>
 #include <openthread/platform/misc.h>
 
@@ -146,6 +149,14 @@ pseudo_reset:
 
 #if OPENTHREAD_CONFIG_PLATFORM_LOG_CRASH_DUMP_ENABLE
     IgnoreError(otPlatLogCrashDump());
+#endif
+
+#if OPENTHREAD_FTD || OPENTHREAD_MTD
+    if (otDatasetIsCommissioned(instance))
+    {
+        IgnoreError(otIp6SetEnabled(instance, true));
+        IgnoreError(otThreadSetEnabled(instance, true));
+    }
 #endif
 
     while (!otSysPseudoResetWasRequested())
