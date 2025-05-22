@@ -62,7 +62,7 @@ jobs:
       run: third_party/tcplp/lib/test/test_all
 
   unit-tests:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     env:
       COVERAGE: 1
     steps:

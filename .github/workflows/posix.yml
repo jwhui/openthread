@@ -46,7 +46,7 @@ permissions:
 jobs:
 
   expects-linux:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     env:
       CFLAGS: -DCLI_COAP_SECURE_USE_COAP_DEFAULT_HANDLER=1 -DOPENTHREAD_CONFIG_MLE_MAX_CHILDREN=15
       CXXFLAGS: -DCLI_COAP_SECURE_USE_COAP_DEFAULT_HANDLER=1 -DOPENTHREAD_CONFIG_MLE_MAX_CHILDREN=15
@@ -136,7 +136,7 @@ jobs:
         retention-days: 1
 
   thread-cert:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     env:
       COVERAGE: 1
       PYTHONUNBUFFERED: 1
@@ -271,7 +271,7 @@ jobs:
         script/check-posix-pty check
 
   rcp-stack-reset:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
     - name: Harden Runner
       uses: step-security/harden-runner@0634a2670c59f64b4a01f0f96f84700a4088b9f0 # v2.12.0
@@ -306,7 +306,7 @@ jobs:
     - expects-linux
     - pty-linux
     - thread-cert
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
     - name: Harden Runner
       uses: step-security/harden-runner@0634a2670c59f64b4a01f0f96f84700a4088b9f0 # v2.12.0
