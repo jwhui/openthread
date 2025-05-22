@@ -126,12 +126,12 @@ jobs:
         sudo apt-get --no-install-recommends install -y build-essential ninja-build libreadline-dev libncurses-dev
         sudo apt-get remove cmake
         sudo apt-get purge --auto-remove cmake
-        wget http://www.cmake.org/files/v3.10/cmake-3.10.3.tar.gz
-        tar xf cmake-3.10.3.tar.gz
-        cd cmake-3.10.3
+        wget http://www.cmake.org/files/v3.20/cmake-3.20.5.tar.gz
+        tar xf cmake-3.20.5.tar.gz
+        cd cmake-3.20.5
         ./configure
         sudo make install
-        cmake --version | grep 3.10.3
+        cmake --version | grep 3.20.5
     - name: Build
       run: |
         OT_NODE_TYPE=rcp ./script/test build
