@@ -177,9 +177,11 @@ class OtbrDocker:
         self.bash('service otbr-agent stop')
 
     def stop_mdns_service(self):
+        self.send_command('mdns disable')
         self.bash('service avahi-daemon stop; service mdns stop; !(cat /proc/net/udp | grep -i :14E9)')
 
     def start_mdns_service(self):
+        self.send_command('mdns_enable')
         self.bash('service avahi-daemon start; service mdns start; cat /proc/net/udp | grep -i :14E9')
 
     def start_ot_ctl(self):
