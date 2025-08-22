@@ -145,9 +145,13 @@ class TestMlr(thread_cert.TestCase):
 
         # ping MA1 from Host could generate a reply from R1 and R2
         self.assertTrue(self.nodes[HOST].ping(MA1, backbone=True, ttl=5))
+        print("==== Ping1 1")
         self.simulator.go(WAIT_REDUNDANCE)
+        print("==== Ping1 2")
         self.verify_border_routing_counters(self.nodes[PBBR1], {'inbound_multicast': 1, 'outbound_unicast': 1})
+        print("==== Ping1 3")
         self.verify_border_routing_counters(self.nodes[PBBR2], {'inbound_multicast': 1, 'outbound_unicast': 1})
+        print("==== Ping1 4")
 
         # ping MA2 from R1 could generate a reply from Host and R2
         self.assertTrue(self.nodes[ROUTER1].ping(MA2))
@@ -247,6 +251,8 @@ class TestMlr(thread_cert.TestCase):
 
     def verify_border_routing_counters(self, br, expect_delta):
         delta_counters = br.read_border_routing_counters_delta()
+        print(f"The keys1 are: {', '.join(delta_counters.keys())}")
+        print(f"The keys2 are: {', '.join(expect_delta.keys())}")
         self.assertEqual(set(delta_counters.keys()), set(expect_delta.keys()))
         for key in delta_counters:
             self.assertGreaterEqual(delta_counters[key][0], expect_delta[key])

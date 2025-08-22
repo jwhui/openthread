@@ -61,6 +61,7 @@ void MeshForwarder::SendMessage(OwnedPtr<Message> aMessagePtr)
 
         if (destination.IsMulticast())
         {
+#if 0
             // For traffic destined to multicast address larger than realm local, generally it uses IP-in-IP
             // encapsulation (RFC2473), with outer destination as ALL_MPL_FORWARDERS. So here if the destination
             // is multicast address larger than realm local, it should be for indirection transmission for the
@@ -69,6 +70,9 @@ void MeshForwarder::SendMessage(OwnedPtr<Message> aMessagePtr)
             {
                 message.SetDirectTransmission();
             }
+#else
+            message.SetDirectTransmission();
+#endif
 
             if (message.GetSubType() != Message::kSubTypeMplRetransmission)
             {

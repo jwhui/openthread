@@ -574,7 +574,7 @@ class PacketFilter(object):
         return self.filter(lambda p: p.ipv6.dst == consts.LINK_LOCAL_ALL_ROUTERS_MULTICAST_ADDRESS, **kwargs)
 
     def filter_AMPLFMA(self, mpl_seed_id: Union[int, Ipv6Addr] = None, **kwargs):
-        f = self.filter(lambda p: p.ipv6.dst == consts.ALL_MPL_FORWARDERS_MA, **kwargs)
+        f = self.filter(lambda p: p.ipv6.dst.is_multicast, **kwargs)
         if mpl_seed_id is not None:
             if isinstance(mpl_seed_id, int):
                 mpl_seed_id = Bytes([mpl_seed_id >> 8, mpl_seed_id & 0xFF])

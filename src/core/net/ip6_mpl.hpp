@@ -191,13 +191,15 @@ public:
      *
      * @param[in]  aMessage      The message.
      * @param[in]  aOption       The MPL option.
+     * @oaram[out] aForwardHost  Set to FALSE if the MPL message is a duplicate and must not
+     *                           be forwarded to the host again, untouched otherwise.
      * @param[out] aReceive      Set to FALSE if the MPL message is a duplicate and must not
      *                           go through the receiving process again, untouched otherwise.
      *
      * @retval kErrorNone  Successfully processed the MPL option.
      * @retval kErrorDrop  The MPL message is a duplicate and should be dropped.
      */
-    Error ProcessOption(Message &aMessage, const MplOption &aOption, bool &aReceive);
+    Error ProcessOption(Message &aMessage, const MplOption &aOption, bool &aForwardHost, bool &aReceive);
 
 #if OPENTHREAD_FTD
     /**

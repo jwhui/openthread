@@ -226,6 +226,7 @@ Error Ip6::InsertMplOption(Message &aMessage, Header &aHeader)
 {
     Error error = kErrorNone;
 
+#if 0
     if (aHeader.GetDestination().IsMulticastLargerThanRealmLocal())
     {
         error = PrepareMulticastToLargerThanRealmLocal(aMessage, aHeader);
@@ -233,6 +234,10 @@ Error Ip6::InsertMplOption(Message &aMessage, Header &aHeader)
     }
 
     VerifyOrExit(aHeader.GetDestination().IsRealmLocalMulticast());
+#else
+    VerifyOrExit(aHeader.GetDestination().IsRealmLocalMulticast() ||
+                 aHeader.GetDestination().IsMulticastLargerThanRealmLocal());
+#endif
 
     aMessage.RemoveHeader(sizeof(aHeader));
 
@@ -443,7 +448,8 @@ Error Ip6::SendDatagram(Message &aMessage, MessageInfo &aMessageInfo, uint8_t aI
 
     header.SetDestination(aMessageInfo.GetPeerAddr());
 
-    if (aMessageInfo.GetPeerAddr().IsRealmLocalMulticast())
+    if (aMessageInfo.GetPeerAddr().IsRealmLocalMulticast() ||
+        aMessageInfo.GetPeerAddr().IsMulticastLargerThanRealmLocal())
     {
         SuccessOrExit(error = AddMplOption(aMessage, header));
     }
@@ -452,10 +458,12 @@ Error Ip6::SendDatagram(Message &aMessage, MessageInfo &aMessageInfo, uint8_t aI
 
     Checksum::UpdateMessageChecksum(aMessage, header.GetSource(), header.GetDestination(), aIpProto);
 
+#if 0
     if (aMessageInfo.GetPeerAddr().IsMulticastLargerThanRealmLocal())
     {
         SuccessOrExit(error = PrepareMulticastToLargerThanRealmLocal(aMessage, header));
     }
+#endif
 
     aMessage.SetMulticastLoop(aMessageInfo.GetMulticastLoop());
 
@@ -501,7 +509,7 @@ exit:
     return error;
 }
 
-Error Ip6::HandleOptions(Message &aMessage, const Header &aHeader, bool &aReceive)
+Error Ip6::HandleOptions(Message &aMessage, const Header &aHeader, bool &aForwardHost, bool &aReceive)
 {
     Error          error        = kErrorNone;
     bool           hasMplOption = false;
@@ -543,7 +551,7 @@ Error Ip6::HandleOptions(Message &aMessage, const Header &aHeader, bool &aReceiv
 
     if (hasMplOption)
     {
-        SuccessOrExit(error = mMpl.ProcessOption(aMessage, mplOption, aReceive));
+        SuccessOrExit(error = mMpl.ProcessOption(aMessage, mplOption, aForwardHost, aReceive));
     }
 
     aMessage.SetOffset(offsetRange.GetEndOffset());
@@ -817,6 +825,7 @@ exit:
 Error Ip6::HandleExtensionHeaders(OwnedPtr<Message> &aMessagePtr,
                                   const Header      &aHeader,
                                   uint8_t           &aNextHeader,
+                                  bool              &aForwardHost,
                                   bool              &aReceive)
 {
     Error           error = kErrorNone;
@@ -830,7 +839,7 @@ Error Ip6::HandleExtensionHeaders(OwnedPtr<Message> &aMessagePtr,
         {
         case kProtoHopOpts:
         case kProtoDstOpts:
-            SuccessOrExit(error = HandleOptions(*aMessagePtr, aHeader, aReceive));
+            SuccessOrExit(error = HandleOptions(*aMessagePtr, aHeader, aForwardHost, aReceive));
             break;
 
         case kProtoFragment:
@@ -1106,12 +1115,14 @@ void Ip6::DetermineAction(const Message &aMessage,
 
         aForwardThread = !aMessage.IsOriginThreadNetif();
 
+#if 0
 #if OPENTHREAD_FTD
         if (aMessage.IsOriginThreadNetif() && aHeader.GetDestination().IsMulticastLargerThanRealmLocal() &&
             Get<ChildTable>().HasSleepyChildWithAddress(aHeader.GetDestination()))
         {
             aForwardThread = true;
         }
+#endif
 #endif
 
         // Always forward multicast packets to host network stack
@@ -1205,7 +1216,7 @@ Error Ip6::HandleDatagram(OwnedPtr<Message> aMessagePtr, bool aIsReassembled)
 
     // Process IPv6 Extension Headers
     nextHeader = header.GetNextHeader();
-    SuccessOrExit(error = HandleExtensionHeaders(aMessagePtr, header, nextHeader, receive));
+    SuccessOrExit(error = HandleExtensionHeaders(aMessagePtr, header, nextHeader, forwardHost, receive));
 
     if (receive && (nextHeader == kProtoIp6))
     {

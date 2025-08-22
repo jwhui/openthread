@@ -375,6 +375,7 @@ private:
     Error HandleExtensionHeaders(OwnedPtr<Message> &aMessagePtr,
                                  const Header      &aHeader,
                                  uint8_t           &aNextHeader,
+                                 bool              &aForwardHost,
                                  bool              &aReceive);
     Error FragmentDatagram(Message &aMessage, uint8_t aIpProto);
     Error HandleFragment(Message &aMessage);
@@ -389,7 +390,7 @@ private:
     Error PrepareMulticastToLargerThanRealmLocal(Message &aMessage, const Header &aHeader);
     Error InsertMplOption(Message &aMessage, Header &aHeader);
     Error RemoveMplOption(Message &aMessage);
-    Error HandleOptions(Message &aMessage, const Header &aHeader, bool &aReceive);
+    Error HandleOptions(Message &aMessage, const Header &aHeader, bool &aForwardHost, bool &aReceive);
     Error Receive(Header            &aIp6Header,
                   OwnedPtr<Message> &aMessagePtr,
                   uint8_t            aIpProto,
