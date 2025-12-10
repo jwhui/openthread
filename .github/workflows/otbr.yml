@@ -46,7 +46,7 @@ permissions:
 jobs:
 
   backbone-router:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     env:
       REFERENCE_DEVICE: 1
       VIRTUAL_TIME: 0
@@ -113,7 +113,7 @@ jobs:
         retention-days: 1
 
   thread-border-router:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
@@ -235,7 +235,7 @@ jobs:
     needs:
     - backbone-router
     - thread-border-router
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
     - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
       with:
