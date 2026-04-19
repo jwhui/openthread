@@ -891,6 +891,11 @@ void Core::ProcessRadio(Node &aNode)
         ackFrame.UpdateFcs();
         mPcap.WriteFrame(ackFrame, mNow);
 
+        {
+            int16_t ackRssi = RadioModel::CalculateRssi(*ackNode, aNode);
+            ackFrame.mInfo.mRxInfo.mRssi = ClampToInt8(ackRssi);
+        }
+
         otPlatRadioTxDone(&aNode.GetInstance(), &aNode.mRadio.mTxFrame, &ackFrame, kErrorNone);
     }
     else
